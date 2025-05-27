@@ -1,3 +1,5 @@
+
+
 import jax
 import jax.numpy as jnp
 import jax.random as rnd
@@ -324,14 +326,18 @@ def train_model(state, model, loss_fn, metrics_history, n_epochs, loaders, name,
         callbacks[-1].final_epoch = epoch
 
     metrics_history['lse'] = epoch
+
     # save histories
     utils.save_thing(metrics_history, "traj/" + name + "/metrics.pkl")
+
+    # save state
+    utils.save_state(state, "traj/" + name + "/state.msgpack")
 
     for cb in callbacks:
         cb.save()
 
     print("Training complete", name)
 
-    return metrics_history
+    return metrics_history, state
 
 
