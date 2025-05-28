@@ -1,3 +1,5 @@
+
+
 # imports
 import jax
 import jax.numpy as jnp
@@ -36,7 +38,6 @@ def get_loss_wrap(state, loss_fn, bn=True):
         return loss_fn(preds, batch[1]).mean()
 
     return loss_wrap_bn if bn else loss_wrap
-
 
 def hvp_w(w, v, get_loss):
     """
@@ -272,3 +273,27 @@ def tridiag_to_eigv(tridiag_list):
     return eig_vals, all_evecs, all_weights
 
 
+
+def lanczos_inverse_hvp(tridiag_matrix, lanczos_vecs, v):
+    """
+    Approximate H^{-1}v using Lanczos outputs.
+
+    Args:
+        tridiag_matrix: [k x k] tridiagonal matrix (T)
+        lanczos_vecs: [k x d] Lanczos basis vectors (V)
+        v: [d] target vector
+
+    Returns:
+        approx_ihvp: [d] approximate H^{-1}v
+    """
+    # Project v into Krylov subspace
+    V = lanczos_vecs
+    k = tridiag_matrix.shape[0]
+    v_proj = V @ v   # shape [k]
+
+    # Solve T x = v_proj
+    x = np.linalg.solve(tridiag_matrix, v_proj)  # shape [k]
+
+    # Project back to original space
+    ihvp_approx = V.T @ x  # shape [d]
+    return ihvp_approx
